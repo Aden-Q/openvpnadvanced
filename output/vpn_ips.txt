@@ -1,0 +1,2 @@
+64.233.162.91 youtube.com
+172.64.154.211 openai.com

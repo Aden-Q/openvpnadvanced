@@ -1,0 +1,306 @@
+{
+  "1-courier.push.apple.com": {
+    "ip": "17.57.146.138",
+    "timestamp": "2025-03-23T22:38:00.780684+05:00"
+  },
+  "1-courier.sandbox.push.apple.com": {
+    "ip": "17.188.143.3",
+    "timestamp": "2025-03-23T22:38:00.780701+05:00"
+  },
+  "35-courier.push.apple.com": {
+    "ip": "17.57.146.141",
+    "timestamp": "2025-03-23T22:38:00.780682+05:00"
+  },
+  "alive.github.com": {
+    "ip": "live.github.com.",
+    "timestamp": "2025-03-23T22:52:18.1695+05:00"
+  },
+  "api-free.deepl.com": {
+    "ip": "172.65.225.25",
+    "timestamp": "2025-03-23T22:38:00.7807+05:00"
+  },
+  "api.apple-cloudkit.com": {
+    "ip": "17.248.214.69",
+    "timestamp": "2025-03-23T22:38:00.780682+05:00"
+  },
+  "api.apple-cloudkit.fe2.apple-dns.net": {
+    "ip": "17.248.214.68",
+    "timestamp": "2025-03-23T22:38:00.780684+05:00"
+  },
+  "api.github.com": {
+    "ip": "140.82.121.6",
+    "timestamp": "2025-03-23T22:52:17.642136+05:00"
+  },
+  "api.smoot.apple.com": {
+    "ip": "16.16.163.191",
+    "timestamp": "2025-03-23T22:38:00.780701+05:00"
+  },
+  "api.tabnine.com": {
+    "ip": "34.123.33.186",
+    "timestamp": "2025-03-23T22:38:00.780701+05:00"
+  },
+  "app-measurement.com": {
+    "ip": "173.194.222.101",
+    "timestamp": "2025-03-23T22:38:00.780679+05:00"
+  },
+  "apple.com": {
+    "ip": "17.253.144.10",
+    "timestamp": "2025-03-23T22:38:00.780685+05:00"
+  },
+  "avatars.githubusercontent.com": {
+    "ip": "185.199.109.133",
+    "timestamp": "2025-03-23T22:52:17.701907+05:00"
+  },
+  "bag.itunes.apple.com": {
+    "ip": "151.101.195.6",
+    "timestamp": "2025-03-23T22:38:00.780685+05:00"
+  },
+  "baidu.com": {
+    "ip": "39.156.66.10",
+    "timestamp": "2025-03-23T22:38:00.78068+05:00"
+  },
+  "bbc.com": {
+    "ip": "151.101.192.81",
+    "timestamp": "2025-03-23T22:38:00.780685+05:00"
+  },
+  "c2.p.tabnine.com": {
+    "ip": "34.122.156.49",
+    "timestamp": "2025-03-23T22:38:00.780701+05:00"
+  },
+  "captcha.gtimg.com": {
+    "ip": "43.152.188.95",
+    "timestamp": "2025-03-23T22:38:00.780684+05:00"
+  },
+  "central.github.com": {
+    "ip": "glb-db52c2cf8be544.github.com.",
+    "timestamp": "2025-03-23T22:52:17.848189+05:00"
+  },
+  "chrome.cloudflare-dns.com": {
+    "ip": "162.159.61.3",
+    "timestamp": "2025-03-23T22:38:00.780702+05:00"
+  },
+  "clients1.google.com": {
+    "ip": "74.125.205.139",
+    "timestamp": "2025-03-23T22:38:00.780682+05:00"
+  },
+  "cloudflare-dns.com": {
+    "ip": "104.16.249.249",
+    "timestamp": "2025-03-23T22:38:00.780701+05:00"
+  },
+  "configuration.apple.com": {
+    "ip": "23.207.204.24",
+    "timestamp": "2025-03-23T22:38:00.78068+05:00"
+  },
+  "configuration.ls.apple.com": {
+    "ip": "23.207.205.64",
+    "timestamp": "2025-03-23T22:38:00.780684+05:00"
+  },
+  "dns.weixin.qq.com.cn": {
+    "ip": "43.129.138.148",
+    "timestamp": "2025-03-23T22:38:00.78068+05:00"
+  },
+  "dualstack.d.sni.global.fastly.net": {
+    "ip": "151.101.130.133",
+    "timestamp": "2025-03-23T22:38:00.780686+05:00"
+  },
+  "edge-144.deber3.icloud-content.com": {
+    "ip": "17.248.173.21",
+    "timestamp": "2025-03-23T22:38:00.780682+05:00"
+  },
+  "example.com": {
+    "ip": "96.7.128.175",
+    "timestamp": "2025-03-23T22:38:00.780681+05:00"
+  },
+  "facebook.com": {
+    "ip": "57.144.110.1",
+    "timestamp": "2025-03-23T22:38:00.780702+05:00"
+  },
+  "gateway.icloud.com": {
+    "ip": "17.248.214.68",
+    "timestamp": "2025-03-23T22:38:00.780679+05:00"
+  },
+  "gdmf.apple.com": {
+    "ip": "17.137.162.3",
+    "timestamp": "2025-03-23T22:38:00.780682+05:00"
+  },
+  "google.com": {
+    "ip": "173.194.221.100",
+    "timestamp": "2025-03-23T22:38:00.780678+05:00"
+  },
+  "gsp-ssl.ls.apple.com": {
+    "ip": "17.253.39.208",
+    "timestamp": "2025-03-23T22:38:00.780679+05:00"
+  },
+  "hub.tabnine.com": {
+    "ip": "108.157.229.108",
+    "timestamp": "2025-03-23T22:38:00.78068+05:00"
+  },
+  "id.google.com": {
+    "ip": "66.102.1.94",
+    "timestamp": "2025-03-23T22:38:00.780685+05:00"
+  },
+  "ip.sb": {
+    "ip": "172.67.75.172",
+    "timestamp": "2025-03-23T22:38:00.780701+05:00"
+  },
+  "mail.ru": {
+    "ip": "94.100.180.201",
+    "timestamp": "2025-03-23T22:38:00.780682+05:00"
+  },
+  "main.vscode-cdn.net": {
+    "ip": "13.107.246.45",
+    "timestamp": "2025-03-23T22:38:00.780685+05:00"
+  },
+  "mask-canary.icloud.com": {
+    "ip": "172.224.194.4",
+    "timestamp": "2025-03-23T22:38:00.780682+05:00"
+  },
+  "metrics.icloud.com": {
+    "ip": "17.248.214.133",
+    "timestamp": "2025-03-23T22:38:00.780685+05:00"
+  },
+  "mobile.events.data.microsoft.com": {
+    "ip": "20.42.73.30",
+    "timestamp": "2025-03-23T22:38:00.780684+05:00"
+  },
+  "notify.tabnine.com": {
+    "ip": "34.170.65.59",
+    "timestamp": "2025-03-23T22:38:00.780682+05:00"
+  },
+  "ntc.party": {
+    "ip": "130.255.77.28",
+    "timestamp": "2025-03-23T22:38:00.780684+05:00"
+  },
+  "ocsp2.apple.com": {
+    "ip": "17.253.15.203",
+    "timestamp": "2025-03-23T22:38:00.7807+05:00"
+  },
+  "ogads-pa.googleapis.com": {
+    "ip": "64.233.161.95",
+    "timestamp": "2025-03-23T22:38:00.780686+05:00"
+  },
+  "ohttp-relay1.fastly-edge.com": {
+    "ip": "151.101.195.52",
+    "timestamp": "2025-03-23T22:38:00.780683+05:00"
+  },
+  "openai.com": {
+    "ip": "172.64.154.211",
+    "timestamp": "2025-03-23T22:38:00.780684+05:00"
+  },
+  "otheve.beacon.qq.com": {
+    "ip": "129.226.103.123",
+    "timestamp": "2025-03-23T22:38:00.780701+05:00"
+  },
+  "p125-contacts.icloud.com": {
+    "ip": "17.248.214.70",
+    "timestamp": "2025-03-23T22:38:00.78068+05:00"
+  },
+  "p125-content.icloud.com": {
+    "ip": "17.248.214.67",
+    "timestamp": "2025-03-23T22:38:00.780684+05:00"
+  },
+  "p125-quota.icloud.com": {
+    "ip": "17.248.214.68",
+    "timestamp": "2025-03-23T22:38:00.780685+05:00"
+  },
+  "p128-content.icloud.com": {
+    "ip": "17.248.214.69",
+    "timestamp": "2025-03-23T22:38:00.780681+05:00"
+  },
+  "pds-init.ess.apple.com": {
+    "ip": "62.115.253.224",
+    "timestamp": "2025-03-23T22:38:00.780679+05:00"
+  },
+  "pds.ess.apple.com": {
+    "ip": "17.138.128.4",
+    "timestamp": "2025-03-23T22:38:00.780681+05:00"
+  },
+  "play.google.com": {
+    "ip": "64.233.163.100",
+    "timestamp": "2025-03-23T22:38:00.780701+05:00"
+  },
+  "play.googleapis.com": {
+    "ip": "216.239.34.223",
+    "timestamp": "2025-03-23T22:38:00.780679+05:00"
+  },
+  "proxy.safebrowsing.apple": {
+    "ip": "2.17.251.46",
+    "timestamp": "2025-03-23T22:38:00.780686+05:00"
+  },
+  "sequoia.cdn-apple.com": {
+    "ip": "17.253.15.195",
+    "timestamp": "2025-03-23T22:38:00.7807+05:00"
+  },
+  "signaler-pa.googleapis.com": {
+    "ip": "64.233.162.95",
+    "timestamp": "2025-03-23T22:38:00.780685+05:00"
+  },
+  "smp-device-content.apple.com": {
+    "ip": "17.253.73.205",
+    "timestamp": "2025-03-23T22:38:00.780682+05:00"
+  },
+  "ssl.gstatic.com": {
+    "ip": "173.194.73.94",
+    "timestamp": "2025-03-23T22:38:00.780701+05:00"
+  },
+  "star-mini.c10r.facebook.com": {
+    "ip": "31.13.72.36",
+    "timestamp": "2025-03-23T22:38:00.780679+05:00"
+  },
+  "ted.com": {
+    "ip": "44.206.184.25",
+    "timestamp": "2025-03-23T22:38:00.780685+05:00"
+  },
+  "threads.net": {
+    "ip": "31.13.72.53",
+    "timestamp": "2025-03-23T22:38:00.780684+05:00"
+  },
+  "token.safebrowsing.apple": {
+    "ip": "17.253.15.218",
+    "timestamp": "2025-03-23T22:38:00.780686+05:00"
+  },
+  "translation.googleapis.com": {
+    "ip": "173.194.220.95",
+    "timestamp": "2025-03-23T22:38:00.780679+05:00"
+  },
+  "wps.apple.com": {
+    "ip": "17.8.136.52",
+    "timestamp": "2025-03-23T22:38:00.780686+05:00"
+  },
+  "www.apple.com": {
+    "ip": "23.72.244.208",
+    "timestamp": "2025-03-23T22:38:00.780686+05:00"
+  },
+  "www.facebook.com": {
+    "ip": "star-mini.c10r.facebook.com.",
+    "timestamp": "2025-03-23T22:38:00.780686+05:00"
+  },
+  "www.google.com": {
+    "ip": "64.233.163.104",
+    "timestamp": "2025-03-23T22:38:00.780682+05:00"
+  },
+  "www.googleadservices.com": {
+    "ip": "209.85.233.156",
+    "timestamp": "2025-03-23T22:38:00.780685+05:00"
+  },
+  "www.gstatic.com": {
+    "ip": "64.233.165.94",
+    "timestamp": "2025-03-23T22:38:00.780701+05:00"
+  },
+  "www.instagram.com": {
+    "ip": "z-p42-instagram.c10r.instagram.com.",
+    "timestamp": "2025-03-23T22:38:00.780686+05:00"
+  },
+  "www.ted.com": {
+    "ip": "dualstack.d.sni.global.fastly.net.",
+    "timestamp": "2025-03-23T22:38:00.780684+05:00"
+  },
+  "youtube.com": {
+    "ip": "64.233.162.91",
+    "timestamp": "2025-03-23T22:38:00.78068+05:00"
+  },
+  "z-p42-instagram.c10r.instagram.com": {
+    "ip": "31.13.72.174",
+    "timestamp": "2025-03-23T22:38:00.780681+05:00"
+  }
+}
