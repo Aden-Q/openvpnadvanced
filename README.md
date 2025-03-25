@@ -1,4 +1,4 @@
-# OpenVPNAdvanced - English Documentation
+# OpenVPNAdvanced
 
 > A rule-based traffic splitter for OpenVPN, supporting DoH DNS proxy, rule subscriptions, dynamic routing, caching, and more.
 
