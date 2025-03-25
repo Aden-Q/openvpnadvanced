@@ -77,6 +77,8 @@ func (s *DNSServer) handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 	// 使用递归解析逻辑（带缓存）
 	shouldRoute, ip := dnsmasq.ResolveRecursive(domain, s.Rules, s.Cache)
 
+	log.Printf("🔍 Domain: %s | IP: %s | VPN: %v", domain, ip, shouldRoute)
+
 	if ip == "" {
 		utils.PrintError(domain, "failed to resolve")
 		_ = w.WriteMsg(msg)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"openvpnadvanced/dnsmasq"
@@ -33,7 +34,7 @@ func main() {
 	}
 
 	// 3. Resolve domain (recursively handles CNAME)
-	shouldRoute, ip := dnsmasq.ResolveRecursive(domain, rules, cache)
+	shouldRoute, ip, cname := dnsmasq.ResolveWithCNAME(domain, rules, cache)
 	if ip == "" {
 		fmt.Println("❌ Failed to resolve domain.")
 		return
@@ -49,9 +50,12 @@ func main() {
 	fmt.Printf("Domain:        %s\n", domain)
 	fmt.Printf("Resolved IP:   %s\n", ip)
 	fmt.Printf("Matched Rule:  %v\n", shouldRoute)
+	if cname != "" && cname != domain {
+		fmt.Printf("CNAME Chain:    %s ➜ %s\n", domain, cname)
+	}
 	if err == nil {
-		fmt.Printf("Route via:     %s\n", iface)
-		if shouldRoute && (iface == "utun0" || iface == "utun1" || iface == "utun2" || iface == "utun3" || iface == "utun4") {
+		isVPN := strings.HasPrefix(iface, "utun")
+		if isVPN && shouldRoute {
 			fmt.Println("✅ This domain is routed through VPN")
 		} else {
 			fmt.Println("☁️ This domain is routed directly (not via VPN)")

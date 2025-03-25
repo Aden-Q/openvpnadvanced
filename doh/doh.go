@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// DoHAnswer represents a DNS answer
 type DoHAnswer struct {
 	Name string `json:"name"`
 	Type int    `json:"type"`
@@ -15,6 +16,7 @@ type DoHAnswer struct {
 	Data string `json:"data"`
 }
 
+// DoHResponse represents a DNS response
 type DoHResponse struct {
 	Answer []DoHAnswer `json:"Answer"`
 }
@@ -34,6 +36,11 @@ const (
 
 // Query returns the first A record (IPv4)
 func Query(domain string) (string, error) {
+	return querySingleType(domain, TypeA)
+}
+
+// QueryA is an alias for Query (A record)
+func QueryA(domain string) (string, error) {
 	return querySingleType(domain, TypeA)
 }
 

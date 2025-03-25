@@ -54,8 +54,15 @@ func main() {
 		log.Printf("Warning: failed to delete default VPN routes: %v", err)
 	}
 
+	err = vpn.CorrectDefaultRoute()
+	if err != nil {
+		log.Printf("Warning: failed to correct default route: %v", err)
+	}
+
 	// Step 6: Start DNS server
+	fmt.Printf("🧠 Loaded %d domain rules\n", len(rules))
 	dnsServer := dnsproxy.NewServer(rules, cache, "8.8.8.8:53", iface)
+	fmt.Println("🚦 Starting DNS proxy server...")
 	dnsServer.Start()
 
 	// Step 7: Periodically save cache to disk
