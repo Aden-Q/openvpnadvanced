@@ -53,10 +53,10 @@ jobs:
           sha256sum "${NAME}.zip" > "${NAME}.zip.sha256"
           cd ..
 
-      - name: Upload artifacts
+      - name: Upload per-platform artifact
         uses: actions/upload-artifact@v4
         with:
-          name: builds
+          name: openvpnadvanced-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/*.zip*
   
   release:
@@ -72,10 +72,9 @@ jobs:
         id: version
         run: echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
 
-      - name: Download build artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: builds
           path: dist
 
       - name: Extract changelog
@@ -94,6 +93,6 @@ jobs:
           name: Release v${{ env.VERSION }}
           body: ${{ env.RELEASE_BODY }}
           prerelease: ${{ contains(env.VERSION, '-rc') || contains(env.VERSION, '-beta') }}
-          files: dist/*
+          files: dist/**
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
