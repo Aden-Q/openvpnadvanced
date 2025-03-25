@@ -1,1 +1,7 @@
-In the first version, the basic functions are realized, but there are bugs in CNAME resolution.
+# Changelog
+
+
+## v1.0.1 - 2025-03-26
+### Initial Release
+- DNS proxy
+- VPN route management
