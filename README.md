@@ -3,6 +3,8 @@
 > A rule-based traffic splitter for OpenVPN, supporting DoH DNS proxy, rule subscriptions, dynamic routing, caching, and more.
 
 ---
+[中文文档](https://github.com/iaaaannn0/openvpnadvanced/blob/main/README_CN.md)
+
 
 ## 📚 Table of Contents
 
