@@ -3,6 +3,7 @@ package dnsmasq
 import (
 	"bufio"
 	"log"
+	"net"
 	"openvpnadvanced/doh"
 	"os"
 	"strings"
@@ -12,20 +13,23 @@ type Rule struct {
 	Suffix string
 }
 
-// MatchesRules checks if a domain matches any of the rules
 func MatchesRules(domain string, rules []Rule) bool {
+	// 将域名转换为小写，确保不受大小写影响
+	domain = strings.ToLower(domain)
+
 	for _, rule := range rules {
-		if strings.HasSuffix(domain, rule.Suffix) {
+		// 将规则后缀转换为小写进行匹配
+		if strings.HasSuffix(domain, strings.ToLower(rule.Suffix)) {
 			return true
 		}
 	}
 	return false
 }
 
-// ResolveRecursive performs a full resolution: A, AAAA, CNAME fallback
 func ResolveRecursive(domain string, rules []Rule, cache *Cache) (bool, string) {
 	visited := make(map[string]bool)
 	current := domain
+	originalDomain := domain // 保持原始域名
 
 	for depth := 0; depth < 10; depth++ {
 		if visited[current] {
@@ -34,59 +38,52 @@ func ResolveRecursive(domain string, rules []Rule, cache *Cache) (bool, string) 
 		}
 		visited[current] = true
 
-		if cachedIP, ok := cache.Get(current); ok {
-			log.Printf("[CACHE] %s ➜ %s", current, cachedIP)
-			return MatchesRules(domain, rules), cachedIP
+		// 缓存检查（保留原始域名规则匹配）
+		if cachedVal, ok := cache.Get(current); ok {
+			if net.ParseIP(cachedVal) != nil {
+				log.Printf("[CACHE] %s ➜ %s", current, cachedVal)
+				return MatchesRules(originalDomain, rules), cachedVal // 使用原始域名进行匹配
+			} else {
+				log.Printf("[CACHE-CNAME] %s ➜ %s", current, cachedVal)
+				current = cachedVal
+				continue
+			}
 		}
 
+		// DNS查询流程
 		ip, cname, err := doh.QueryWithCNAME(current)
 		if err == nil && ip != "" {
 			log.Printf("[A] %s ➜ %s", current, ip)
+			cache.Set(originalDomain, ip) // 使用原始域名缓存
 			cache.Set(current, ip)
-			cache.Set(domain, ip)
-			return MatchesRules(domain, rules), ip
+			return MatchesRules(originalDomain, rules), ip
 		}
 
 		ipv6, err := doh.QueryAAAA(current)
 		if err == nil && ipv6 != "" {
 			log.Printf("[AAAA] %s ➜ %s", current, ipv6)
+			cache.Set(originalDomain, ipv6) // 使用原始域名缓存
 			cache.Set(current, ipv6)
-			cache.Set(domain, ipv6)
-			return MatchesRules(domain, rules), ipv6
+			return MatchesRules(originalDomain, rules), ipv6
 		}
 
 		if cname != "" {
 			log.Printf("[CNAME] %s ➜ %s", current, cname)
-			cache.Set(current, cname) // Cache CNAME
-
-			// Try A record on cname
-			if ip2, err := doh.QueryA(cname); err == nil && ip2 != "" {
-				log.Printf("[A+CNAME] %s ➜ %s", cname, ip2)
-				cache.Set(cname, ip2)
-				cache.Set(domain, ip2)
-				return MatchesRules(domain, rules), ip2
-			}
-
-			// Try AAAA record on cname
-			if ip6, err := doh.QueryAAAA(cname); err == nil && ip6 != "" {
-				log.Printf("[AAAA+CNAME] %s ➜ %s", cname, ip6)
-				cache.Set(cname, ip6)
-				cache.Set(domain, ip6)
-				return MatchesRules(domain, rules), ip6
-			}
-
 			current = cname
 			continue
 		}
 
+		// 后备查询逻辑
 		allRecords, err := doh.QueryAll(current)
-		if err == nil && len(allRecords) > 0 {
-			for _, recordList := range allRecords {
-				for _, data := range recordList {
-					log.Printf("[DNS] %s ➜ %s", current, data)
-					cache.Set(current, data)
-					cache.Set(domain, data)
-					return MatchesRules(domain, rules), data
+		if err == nil {
+			for recordType, answers := range allRecords {
+				for _, answer := range answers {
+					if net.ParseIP(answer) != nil {
+						log.Printf("[FALLBACK][%s] %s ➜ %s", recordType, current, answer)
+						cache.Set(originalDomain, answer) // 使用原始域名缓存
+						cache.Set(current, answer)
+						return MatchesRules(originalDomain, rules), answer
+					}
 				}
 			}
 		}
@@ -98,7 +95,6 @@ func ResolveRecursive(domain string, rules []Rule, cache *Cache) (bool, string) 
 	return false, ""
 }
 
-// LoadDomainRules loads DOMAIN-SUFFIX rules from a file
 func LoadDomainRules(path string) ([]Rule, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -114,19 +110,19 @@ func LoadDomainRules(path string) ([]Rule, error) {
 			continue
 		}
 		if strings.HasPrefix(line, "DOMAIN-SUFFIX,") {
-			suffix := strings.TrimPrefix(line, "DOMAIN-SUFFIX,")
-			rules = append(rules, Rule{Suffix: suffix})
+			parts := strings.SplitN(line, ",", 2)
+			if len(parts) == 2 {
+				rules = append(rules, Rule{Suffix: strings.ToLower(parts[1])})
+			}
 		}
 	}
-
 	return rules, nil
-
 }
 
-// ResolveWithCNAME exposes recursive resolution and returns CNAME (if any)
 func ResolveWithCNAME(domain string, rules []Rule, cache *Cache) (bool, string, string) {
 	visited := make(map[string]bool)
 	current := domain
+	originalDomain := domain
 	var firstCNAME string
 
 	for depth := 0; depth < 10; depth++ {
@@ -136,62 +132,55 @@ func ResolveWithCNAME(domain string, rules []Rule, cache *Cache) (bool, string, 
 		}
 		visited[current] = true
 
-		if cachedIP, ok := cache.Get(current); ok {
-			log.Printf("[CACHE] %s ➜ %s", current, cachedIP)
-			return MatchesRules(domain, rules), cachedIP, firstCNAME
+		// 缓存检查（保持规则匹配）
+		if cachedVal, ok := cache.Get(current); ok {
+			if net.ParseIP(cachedVal) != nil {
+				log.Printf("[CACHE] %s ➜ %s", current, cachedVal)
+				return MatchesRules(originalDomain, rules), cachedVal, firstCNAME
+			} else {
+				log.Printf("[CACHE-CNAME] %s ➜ %s", current, cachedVal)
+				current = cachedVal
+				continue
+			}
 		}
 
+		// DNS查询流程
 		ip, cname, err := doh.QueryWithCNAME(current)
 		if err == nil && ip != "" {
 			log.Printf("[A] %s ➜ %s", current, ip)
+			cache.Set(originalDomain, ip) // 使用原始域名缓存
 			cache.Set(current, ip)
-			cache.Set(domain, ip)
-			return MatchesRules(domain, rules), ip, firstCNAME
+			return MatchesRules(originalDomain, rules), ip, firstCNAME
 		}
 
 		ipv6, err := doh.QueryAAAA(current)
 		if err == nil && ipv6 != "" {
 			log.Printf("[AAAA] %s ➜ %s", current, ipv6)
+			cache.Set(originalDomain, ipv6) // 使用原始域名缓存
 			cache.Set(current, ipv6)
-			cache.Set(domain, ipv6)
-			return MatchesRules(domain, rules), ipv6, firstCNAME
+			return MatchesRules(originalDomain, rules), ipv6, firstCNAME
 		}
 
 		if cname != "" {
 			log.Printf("[CNAME] %s ➜ %s", current, cname)
-			cache.Set(current, cname) // Cache CNAME
 			if firstCNAME == "" {
 				firstCNAME = cname
 			}
-
-			// Try A record on cname
-			if ip2, err := doh.QueryA(cname); err == nil && ip2 != "" {
-				log.Printf("[A+CNAME] %s ➜ %s", cname, ip2)
-				cache.Set(cname, ip2)
-				cache.Set(domain, ip2)
-				return MatchesRules(domain, rules), ip2, firstCNAME
-			}
-
-			// Try AAAA record on cname
-			if ip6, err := doh.QueryAAAA(cname); err == nil && ip6 != "" {
-				log.Printf("[AAAA+CNAME] %s ➜ %s", cname, ip6)
-				cache.Set(cname, ip6)
-				cache.Set(domain, ip6)
-				return MatchesRules(domain, rules), ip6, firstCNAME
-			}
-
 			current = cname
 			continue
 		}
 
+		// 后备查询逻辑
 		allRecords, err := doh.QueryAll(current)
-		if err == nil && len(allRecords) > 0 {
-			for _, recordList := range allRecords {
-				for _, data := range recordList {
-					log.Printf("[DNS] %s ➜ %s", current, data)
-					cache.Set(current, data)
-					cache.Set(domain, data)
-					return MatchesRules(domain, rules), data, firstCNAME
+		if err == nil {
+			for recordType, answers := range allRecords {
+				for _, answer := range answers {
+					if net.ParseIP(answer) != nil {
+						log.Printf("[FALLBACK][%s] %s ➜ %s", recordType, current, answer)
+						cache.Set(originalDomain, answer) // 使用原始域名缓存
+						cache.Set(current, answer)
+						return MatchesRules(originalDomain, rules), answer, firstCNAME
+					}
 				}
 			}
 		}

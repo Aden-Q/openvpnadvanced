@@ -1,62 +1,60 @@
-# OpenVPNAdvanced
+# OpenVPNAdvanced (English Documentation)
 
-> A rule-based traffic splitter for OpenVPN, supporting DoH DNS proxy, rule subscriptions, dynamic routing, caching, and more.
+> A rule-based OpenVPN traffic splitter supporting DoH DNS proxy, rule subscriptions, dynamic route injection, DNS caching, and more.
 
 ---
 [中文文档](https://github.com/iaaaannn0/openvpnadvanced/blob/main/README_CN.md)
 
-
 ## 📚 Table of Contents
 
-- [Introduction](#introduction)
+- [Project Overview](#project-overview)
 - [Features](#features)
-- [Usage Guide](#usage-guide)
+- [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
-  - [Build & Install](#build--install)
-  - [Start Service](#start-service)
+  - [Build & Installation](#build--installation)
+  - [Start the Service](#start-the-service)
   - [Configure Local DNS](#configure-local-dns)
-- [Rule Configuration](#rule-configuration)
+- [Configuration Guide](#configuration-guide)
 - [How It Works](#how-it-works)
-- [System Architecture](#system-architecture)
-- [Module Overview](#module-overview)
+- [Architecture](#architecture)
+- [Module Description](#module-description)
 - [FAQ](#faq)
 - [Performance Optimization](#performance-optimization)
 - [Security & Privacy](#security--privacy)
-- [Verify VPN Routing](#verify-vpn-routing)
+- [How to Verify VPN Routing](#how-to-verify-vpn-routing)
 - [Developer Guide](#developer-guide)
-  - [Key Function References](#key-function-references)
 - [License](#license)
 
 ---
 
-## Introduction
+## Project Overview
 
-OpenVPNAdvanced is designed to provide OpenVPN users with a high-performance, flexible rule-based traffic splitter. It prevents all traffic from going through VPN and supports rule subscriptions, DNS caching, CNAME resolution, DNS protection, and more.
+This project is designed to provide OpenVPN users with a high-performance and flexible rule-based traffic splitter. It prevents all traffic from going through VPN and supports subscriptions, DNS caching, CNAME resolution, and DNS pollution protection.
 
 ---
 
 ## Features
 
-- ✅ Local DNS Proxy (support DoH / TCP / UDP)
-- ✅ Custom rule list and remote subscriptions (auto-merge & deduplicate)
-- ✅ Accurate routing (static route via utunX)
-- ✅ Automatically detect VPN interface (e.g., utun0 / utun8)
-- ✅ Fix macOS default gateway to direct interface
-- ✅ Full CNAME recursive resolution
-- ✅ Instant response via cache hits
-- ✅ One-command setup
+- ✅ Local DNS proxy (supports DoH / TCP / UDP)
+- ✅ Custom rules and remote subscriptions (auto deduplication & merge)
+- ✅ Accurate routing (adds static route via utunX)
+- ✅ Automatic VPN interface detection (e.g. utun0 / utun8)
+- ✅ Fixes default macOS gateway to direct network interface
+- ✅ Supports recursive CNAME resolution
+- ✅ Ultra-fast response via cache
+- ✅ One-command startup, no complex setup
 
 ---
 
-## Usage Guide
+## Getting Started
 
 ### Prerequisites
 
 - Go 1.18+
-- macOS with OpenVPN client (e.g. Tunnelblick)
-- Active VPN connection
+- macOS (supports `route`, `scutil`, etc.)
+- Connected OpenVPN client (e.g. Tunnelblick)
 
-### Build & Install
+### Build & Installation
 
 ```bash
 git clone https://github.com/iaaaannn0/openvpnadvanced.git
@@ -64,11 +62,52 @@ cd openvpnadvanced
 go build -o openvpnadvanced ./cmd
 ```
 
-### Start Service
+### Start the Service
 
 ```bash
 sudo ./openvpnadvanced
 ```
+
+### Interactive Console
+
+The tool provides an interactive command console (ovpnctl) for runtime control.
+
+#### Start the Console
+
+```bash
+sudo ./openvpnadvanced --start
+```
+
+Then type:
+
+```text
+ovpnctl> help
+```
+
+#### Common Commands
+
+| Command | Description |
+|---------|-------------|
+| `start` | Start the core logic silently in the background, logs written to file |
+| `startv` | Start and show real-time logs in console |
+| `status` | Check if core is running and OpenVPN check status |
+| `view-log info` | Show all logs |
+| `view-log err` | Show only error logs |
+| `view-log vpn` | Show only VPN route logs |
+| `test example.com` | Test if the domain matches VPN rule |
+| `rtest example.com` | Resolve and determine if VPN or direct |
+| `show-iface` | Display current VPN interface info |
+| `clear` | Clear console screen |
+| `reload-config` | Reload config.ini without restarting service |
+| `check-openvpn-on/off` | Enable/disable OpenVPN client check |
+| `log-on/off` | Turn logging on or off |
+| `set-log-level info/vpn/err` | Set log verbosity |
+| `clear-log` | Clear all log files |
+| `exit` | Exit the console |
+
+> Tab-completion supported. Navigate input history with arrow keys.
+
+---
 
 ### Configure Local DNS
 
@@ -85,13 +124,13 @@ go run tools/trace.go youtube.com
 
 ---
 
-## Rule Configuration
+## Configuration Guide
 
-- `assets/rule.list`: Custom rules
-- `assets/subscriptions.txt`: Online rule subscriptions
-- `assets/merged_rule.list`: Auto-generated merged rules
-- `output/vpn_ips.txt`: Logged IPs routed via VPN
-- `assets/cache.json`: DNS cache
+- `assets/rule.list`: Custom rule list
+- `assets/subscriptions.txt`: Online subscription sources
+- `assets/merged_rule.list`: Merged rule file (auto-generated)
+- `output/vpn_ips.txt`: IPs routed through VPN (log output)
+- `assets/cache.json`: Cached DNS records (auto-generated)
 
 Supported formats:
 ```
@@ -103,42 +142,42 @@ DOMAIN,facebook.com
 
 ## How It Works
 
-The program achieves domain-based traffic splitting through a local DNS proxy.
+This tool implements fine-grained domain-based traffic routing through a local DNS proxy.
 
-### 1. DNS Redirection
+### 1. System DNS Redirection
 
-Set system DNS to `127.0.0.1` to redirect all queries to local TCP/UDP 53 proxy.
+Set your system's DNS to `127.0.0.1` and let the tool capture all DNS queries via TCP/UDP 53.
 
-### 2. Rule Matching & Cache
+### 2. Rule Matching & Caching
 
-- Cache is checked first
-- If not cached, domain is matched against `merged_rule.list`
+- Checks the local cache first
+- If cache misses, domain is matched against `merged_rule.list` (supports `DOMAIN-SUFFIX`, `DOMAIN`, etc.)
 
-### 3. DoH Resolution with CNAME
+### 3. DoH & CNAME Resolution
 
-- Uses Cloudflare / Google DoH
-- Recursively resolves A/AAAA/CNAME chain
-- Falls back to A/AAAA on intermediate CNAMEs for real IP
+If no match or no cache, fallback to DoH (Cloudflare or Google):
+- Recursively resolve A, AAAA, and CNAME records
+- Fallback on intermediate CNAMEs to ensure final IP
 
-### 4. Route Management
+### 4. Route Control
 
-- ✅ Matched: Adds static route to `utunX` via `route add`
-- ❌ Not matched: Leaves route untouched (default interface like `en0`)
+Based on matching result:
+- ✅ Matched: `route add` to VPN interface (e.g. utun8)
+- ❌ Not matched: default direct route (e.g. en0)
 
-Removes VPN catch-all routes (`0.0.0.0/1`, `128.0.0.0/1`) and restores actual default gateway at startup.
+Removes catch-all routes (`0.0.0.0/1`, `128.0.0.0/1`) and restores default gateway at startup.
 
-### 5. Trace Tool
+### 5. Debug Tool
 
 Use `tools/trace.go` to:
-
-- Print resolution result
-- Show rule match
-- Indicate VPN route or direct
-- Display CNAME chain
+- Show if domain matched
+- Display IP result
+- Show VPN or direct
+- Print CNAME hops
 
 ---
 
-## System Architecture
+## Architecture
 
 ```mermaid
 graph TD
@@ -154,17 +193,17 @@ graph TD
 
 ---
 
-## Module Overview
+## Module Description
 
 | Module | Path | Description |
 |--------|------|-------------|
 | main.go | `cmd/` | Program entry |
-| config.go | `config/` | Load config |
-| doh.go | `doh/` | DoH logic |
-| server.go | `dnsproxy/` | DNS server |
-| fetcher.go / parser.go | `fetcher/` | Rule fetching |
-| openvpn.go | `vpn/` | VPN routing logic |
-| trace.go | `tools/` | Debug CLI tool |
+| config.go | `config/` | Config loader |
+| doh.go | `doh/` | DoH resolver |
+| server.go | `dnsproxy/` | DNS proxy server |
+| fetcher.go / parser.go | `fetcher/` | Subscription fetcher |
+| openvpn.go | `vpn/` | VPN interface & route logic |
+| trace.go | `tools/` | Domain debug tool |
 
 ---
 
@@ -172,17 +211,17 @@ graph TD
 
 ### Q1: "No VPN interface found"
 
-Make sure VPN is connected and `utunX` exists (check via `ifconfig`).
+Make sure your VPN is active and utunX exists (`ifconfig`).
 
-### Q2: `route: not in table`
+### Q2: `route: not in table` warning?
 
-Catch-all route already removed, safe to ignore.
+Catch-all route already removed. Safe to ignore.
 
-### Q3: Some domains inaccessible (e.g. `ted.com`)
+### Q3: Domain unreachable (e.g. `ted.com`)?
 
-Likely due to deep CNAME chains. Latest version supports recursive resolution.
+Caused by deep CNAME chains. Recursive resolution is supported.
 
-### Q4: Restore DNS?
+### Q4: Reset system DNS?
 
 ```bash
 sudo networksetup -setdnsservers Wi-Fi empty
@@ -192,24 +231,24 @@ sudo networksetup -setdnsservers Wi-Fi empty
 
 ## Performance Optimization
 
-- **DNS Caching**: Results stored in `assets/cache.json`
-- **Selective Routing**: Only adds matched IPs
-- **CNAME Optimization**: Uses cache and fallback logic
-- **Rule Deduplication**: Merges local & remote rules
+- **DNS Caching**: Results saved in `assets/cache.json`
+- **Selective Routing**: Only matched IPs are routed
+- **CNAME Optimization**: Uses fallback and cache
+- **Subscription Deduplication**: Merges and dedupes rules
 
 ---
 
 ## Security & Privacy
 
-- DoH ensures encrypted DNS queries
-- No telemetry, no logging
-- Cache is local and can be removed manually
+- All DNS queries use encrypted DoH
+- No telemetry or user tracking
+- Cache is local and can be deleted
 
 ---
 
-## Verify VPN Routing
+## How to Verify VPN Routing
 
-### CLI Method
+### Manually via CLI
 
 ```bash
 dig youtube.com +short
@@ -224,15 +263,15 @@ If output shows:
 interface: utun8
 ```
 
-It is routed via VPN.
+It is routed through VPN.
 
-### Trace Tool
+### Using Trace Tool
 
 ```bash
 go run tools/trace.go youtube.com
 ```
 
-Sample:
+Output will show:
 
 ```
 Route via: utun8
@@ -244,10 +283,10 @@ Route via: utun8
 ## Developer Guide
 
 ```bash
-# Run main service
+# Run main logic
 sudo go run cmd/main.go
 
-# Debug a domain
+# Test rule match for domain
 go run tools/trace.go example.com
 ```
 
@@ -255,59 +294,22 @@ go run tools/trace.go example.com
 
 ```text
 .
-├── cmd/                 # Entry point
-├── config/              # Config loader
+├── cmd/                 # Program entry
+├── config/              # Config reader
 ├── dnsmasq/             # Resolver & cache
 ├── doh/                 # DoH client
 ├── dnsproxy/            # DNS listener
-├── fetcher/             # Rule fetchers
-├── vpn/                 # VPN control
-├── tools/               # Trace utility
-├── assets/              # Rule & cache files
-└── output/              # VPN IP logs
+├── fetcher/             # Rule subscription
+├── vpn/                 # VPN logic
+├── tools/               # Debug tools
+├── assets/              # Rules & cache
+└── output/              # VPN logs
 ```
-
----
-
-## Key Function References
-
-### dnsmasq/
-
-- `ResolveRecursive()`: Full DNS resolve w/ CNAME
-- `ResolveWithCNAME()`: Same + first CNAME shown
-- `MatchesRules()`: Rule match logic
-
-### doh/
-
-- `Query() / QueryA() / QueryAAAA()`: A/AAAA resolver
-- `QueryWithCNAME()`: A + CNAME combo
-- `QueryAll()`: All DNS records
-
-### dnsproxy/
-
-- `StartDNSProxy()`: Launch local proxy
-
-### vpn/
-
-- `DetectVPNInterface()`: Get utun interface
-- `AddRoute()`: Route IP via VPN
-- `CorrectDefaultRoute()`: Fix macOS gateway
-
-### fetcher/
-
-- `LoadRulesFromFile()`: Load local rules
-- `LoadSubscriptions()`: Fetch remote
-- `MergeRules()`: Merge and dedup
-
-### trace.go
-
-- `main()`: CLI for resolution debug
-- Uses `ResolveWithCNAME()`
-
-> All functions are documented and IDE-friendly.
 
 ---
 
 ## License
 
 MIT License © 2025
+
+Permission is hereby granted, free of charge, to any person obtaining a copy...

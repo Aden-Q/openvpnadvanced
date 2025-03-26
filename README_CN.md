@@ -67,6 +67,45 @@ go build -o openvpnadvanced ./cmd
 sudo ./openvpnadvanced
 ```
 
+### 交互控制台使用说明
+
+程序支持交互式命令行控制台（ovpnctl），可动态控制分流逻辑与查看状态。
+
+#### 启动控制台
+
+```bash
+sudo ./openvpnadvanced --start
+```
+
+启动后进入交互命令行：
+
+```text
+ovpnctl> help
+```
+
+#### 常用命令示例
+
+| 命令 | 说明 |
+|------|------|
+| `start` | 静默启动核心分流程序，后台运行，日志写入文件 |
+| `startv` | 启动程序并实时在控制台显示所有日志 |
+| `status` | 查看核心程序是否正在运行，VPN 检查状态 |
+| `view-log info` | 查看全部日志 |
+| `view-log err` | 查看错误日志 |
+| `view-log vpn` | 查看 VPN 命中日志 |
+| `test example.com` | 测试该域名是否命中规则并走 VPN |
+| `rtest example.com` | 解析并判断该域名实际走哪个出口 |
+| `show-iface` | 查看当前 VPN 接口状态 |
+| `clear` | 清空控制台输出 |
+| `reload-config` | 热加载 config.ini 配置 |
+| `check-openvpn-on/off` | 开启/关闭 OpenVPN 启动检查 |
+| `log-on/off` | 开启或关闭日志记录功能 |
+| `set-log-level info/vpn/err` | 设置日志等级 |
+| `clear-log` | 清空日志文件 |
+| `exit` | 退出控制台 |
+
+> 支持命令补全（按 Tab 键），并可通过方向键翻阅历史输入。
+
 ### 设置本地 DNS
 
 ```bash
