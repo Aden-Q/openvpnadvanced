@@ -68,7 +68,7 @@ func CorrectDefaultRoute() error {
 
 	// Step 2: Delete all default routes (may need to run multiple times)
 	for i := 0; i < 3; i++ {
-		exec.Command("sudo", "route", "delete", "default").Run()
+		_ = exec.Command("sudo", "route", "delete", "default").Run()
 	}
 
 	// Step 3: Add back default route to real gateway

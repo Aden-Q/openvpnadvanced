@@ -3,7 +3,7 @@ package dnsmasq
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"sync"
 )
@@ -27,7 +27,7 @@ func LoadCacheFromFile() (map[string]DNSRecord, error) {
 	}
 	defer file.Close()
 
-	bytes, err := ioutil.ReadAll(file)
+	bytes, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func SaveCacheToFile(cache *Cache) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(cacheFilePath, bytes, 0644)
+	err = os.WriteFile(cacheFilePath, bytes, 0644)
 	if err != nil {
 		return err
 	}
