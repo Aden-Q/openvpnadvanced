@@ -2,9 +2,6 @@
 
 .vscode/
 
-# Binaries for programs and plugins
-openvpnadvanced
-
 # Test binary, built with `go test -c`
 *.test
 
