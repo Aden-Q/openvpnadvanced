@@ -1,6 +1,7 @@
 ARG GOLANGCI_LINT_VERSION=v1.62.2
 ARG GO_VERSION=1.23
 
+# Base image for building the application
 FROM golang:${GO_VERSION} AS build-artifacts
 WORKDIR /app
 COPY . .

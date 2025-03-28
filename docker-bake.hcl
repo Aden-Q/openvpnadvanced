@@ -7,6 +7,8 @@ target "lint" {
     context = "."
     tags = ["lint"]
     target = "lint"
+    cache-to = ["type=gha,mode=max"]
+    cache-from = ["type=gha"]
 }
 
 target "build" {
@@ -14,6 +16,8 @@ target "build" {
     context = "."
     tags = ["build"]
     target = "build"
+    cache-to = ["type=gha,mode=max"]
+    cache-from = ["type=gha"]
 }
 
 target "test" {
@@ -21,4 +25,6 @@ target "test" {
     context = "."
     tags = ["test"]
     target = "test"
+    cache-to = ["type=gha,mode=max"]
+    cache-from = ["type=gha"]
 }
