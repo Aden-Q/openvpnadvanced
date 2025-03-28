@@ -49,7 +49,7 @@ func FetchAndMergeRules(subscriptionFile, outputFile string) error {
 	defer out.Close()
 
 	for rule := range ruleSet {
-		out.WriteString(rule + "\n")
+		_, _ = out.WriteString(rule + "\n")
 	}
 
 	fmt.Printf("✅ Merged %d unique rules into %s\n", len(ruleSet), outputFile)

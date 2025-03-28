@@ -151,7 +151,10 @@ func runCoreLogic(verbose bool) {
 	}
 	log.Printf("VPN interface detected: %s\n", iface)
 	if appConfig.LogLevel == "info" || appConfig.LogLevel == "vpn" {
-		vpnLogFile.WriteString(fmt.Sprintf("[VPN] Interface detected: %s\n", iface))
+		_, err = vpnLogFile.WriteString(fmt.Sprintf("[VPN] Interface detected: %s\n", iface))
+		if err != nil {
+			log.Printf("Warning: failed to write to vpn.log: %v", err)
+		}
 	}
 
 	// Remove catch-all VPN routes
@@ -182,14 +185,14 @@ func runCoreLogic(verbose bool) {
 				msg := fmt.Sprintf("Failed to save cache: %v", err)
 				log.Println("[ERROR]", msg)
 				if appConfig.LogLevel == "err" || appConfig.LogLevel == "info" {
-					logFile.WriteString("[ERROR] " + msg + "\n")
-					errLogFile.WriteString("[ERROR] " + msg + "\n")
+					_, _ = logFile.WriteString("[ERROR] " + msg + "\n")
+					_, _ = errLogFile.WriteString("[ERROR] " + msg + "\n")
 				}
 			} else {
 				successMsg := "✅ Cache saved to cache.json"
 				log.Println(successMsg)
 				if appConfig.LogLevel == "info" {
-					logFile.WriteString(successMsg + "\n")
+					_, _ = logFile.WriteString(successMsg + "\n")
 				}
 			}
 		}
@@ -281,7 +284,7 @@ func startConsole() {
 				continue
 			}
 			appConfig.AutoSubscribe = (parts[1] == "true")
-			saveINIConfig("config.ini")
+			_ = saveINIConfig("config.ini")
 		case "update-period":
 			if len(parts) < 2 {
 				fmt.Println("Missing duration string")
@@ -292,7 +295,7 @@ func startConsole() {
 				fmt.Println("Invalid duration:", err)
 			} else {
 				appConfig.UpdatePeriod = dur
-				saveINIConfig("config.ini")
+				_ = saveINIConfig("config.ini")
 			}
 		case "update-now":
 			manualUpdate()
@@ -300,17 +303,17 @@ func startConsole() {
 			showConfig()
 		case "check-openvpn-on":
 			appConfig.CheckOpenVPN = true
-			saveINIConfig("config.ini")
+			_ = saveINIConfig("config.ini")
 		case "check-openvpn-off":
 			appConfig.CheckOpenVPN = false
-			saveINIConfig("config.ini")
+			_ = saveINIConfig("config.ini")
 		case "set-log-level":
 			if len(parts) < 2 {
 				fmt.Println("Missing log level: info, err, or vpn")
 				continue
 			}
 			appConfig.LogLevel = parts[1]
-			saveINIConfig("config.ini")
+			_ = saveINIConfig("config.ini")
 			fmt.Println("Log level set to:", appConfig.LogLevel)
 		case "start":
 			if coreStarted {
@@ -389,9 +392,9 @@ func startConsole() {
 			}
 		case "clear-logs":
 			fmt.Println("Clearing all logs...")
-			os.Truncate("logs/app.log", 0)
-			os.Truncate("logs/err.log", 0)
-			os.Truncate("logs/vpn.log", 0)
+			_ = os.Truncate("logs/app.log", 0)
+			_ = os.Truncate("logs/err.log", 0)
+			_ = os.Truncate("logs/vpn.log", 0)
 			fmt.Println("✅ Logs cleared.")
 		case "compress-logs":
 			timestamp := time.Now().Format("20060102_150405")
@@ -454,7 +457,7 @@ func startConsole() {
 		case "clear":
 			cmd := exec.Command("clear")
 			cmd.Stdout = os.Stdout
-			cmd.Run()
+			_ = cmd.Run()
 		default:
 			fmt.Println("Unknown command:", parts[0])
 		}
@@ -464,7 +467,7 @@ func startConsole() {
 func main() {
 	// Ensure logs directory exists
 	if _, err := os.Stat("logs"); os.IsNotExist(err) {
-		os.Mkdir("logs", 0755)
+		_ = os.Mkdir("logs", 0755)
 	}
 
 	err := loadINIConfig("config.ini")

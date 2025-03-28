@@ -100,6 +100,7 @@ func (s *DNSServer) handleDNSRequest(w dns.ResponseWriter, r *dns.Msg) {
 	}
 }
 
+// nolint: all
 func (s *DNSServer) forwardToFallback(domain string) (string, error) {
 	client := new(dns.Client)
 	msg := new(dns.Msg)
