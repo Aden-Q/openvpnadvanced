@@ -4,7 +4,7 @@ ARG GO_VERSION=1.23
 FROM golang:${GO_VERSION} AS build-artifacts
 WORKDIR /app
 COPY . .
-RUN go mod download
+RUN go mod vendor
 
 # Linting stage
 FROM golangci/golangci-lint:${GOLANGCI_LINT_VERSION} AS lint
