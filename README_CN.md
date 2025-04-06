@@ -1,75 +1,100 @@
-# OpenVPNAdvanced 中文说明文档
+# OpenVPNAdvanced (中文文档)
 
-> 一个基于规则的 OpenVPN 流量分流器，支持 DoH DNS 代理、规则订阅、动态添加路由、缓存加速等。
+> 一个基于规则的 OpenVPN 流量分流器，支持 DoH DNS 代理、规则订阅、动态路由注入、DNS 缓存等功能。
 
 ---
+[English Documentation](https://github.com/iaaaannn0/openvpnadvanced/blob/main/README.md)
 
 ## 📚 目录
 
-- [项目简介](#项目简介)
+- [项目概述](#项目概述)
 - [功能特性](#功能特性)
-- [使用教程](#使用教程)
-  - [前置依赖](#前置依赖)
-  - [安装构建](#安装构建)
+- [快速开始](#快速开始)
+  - [环境要求](#环境要求)
+  - [构建安装](#构建安装)
   - [启动服务](#启动服务)
-  - [设置本地 DNS](#设置本地-dns)
-- [配置说明](#配置说明)
-- [程序实现原理](#程序实现原理)
-- [系统架构设计](#系统架构设计)
+  - [配置本地 DNS](#配置本地-dns)
+- [配置指南](#配置指南)
+- [工作原理](#工作原理)
+- [系统架构](#系统架构)
 - [模块说明](#模块说明)
-- [常见问题与解决方案](#常见问题与解决方案)
-- [性能优化说明](#性能优化说明)
+- [常见问题](#常见问题)
+- [性能优化](#性能优化)
 - [安全与隐私](#安全与隐私)
-- [如何验证是否真的走 VPN](#如何验证是否真的走-vpn)
+- [如何验证 VPN 路由](#如何验证-vpn-路由)
 - [开发者指南](#开发者指南)
 - [许可证](#许可证)
 
 ---
 
-## 项目简介
+## 项目概述
 
-本项目旨在为 OpenVPN 用户提供一个高性能、灵活的规则分流工具，避免全部流量走 VPN，支持中英规则订阅、缓存、CNAME 解析、防 DNS 污染等。
+本项目旨在为 OpenVPN 用户提供一个高性能、灵活的基于规则的流量分流器。它可以防止所有流量都通过 VPN，并支持规则订阅、DNS 缓存、CNAME 解析和 DNS 污染防护。
+
+### 主要优势
+- **智能流量路由**：基于规则自动路由流量
+- **增强隐私保护**：支持 DoH (DNS over HTTPS) 安全 DNS 查询
+- **提升性能**：DNS 缓存和优化的路由
+- **易于管理**：简单的配置和规则管理
+- **实时监控**：全面的日志和状态跟踪
 
 ---
 
 ## 功能特性
 
+### 核心功能
 - ✅ 本地 DNS 代理（支持 DoH / TCP / UDP）
-- ✅ 自定义规则与规则订阅（自动去重合并）
-- ✅ 精准分流（添加静态路由走 utunX）
-- ✅ 自动识别 VPN 接口（如 utun0 / utun8）
-- ✅ 修复 macOS 默认路由为直连网卡
-- ✅ 支持 CNAME 多级跳转解析
-- ✅ 命中缓存即返回，超快响应
-- ✅ 一键启动，无需繁琐配置
+- ✅ 自定义规则和远程订阅（自动去重和合并）
+- ✅ 精确路由（通过 utunX 添加静态路由）
+- ✅ 自动 VPN 接口检测（如 utun0 / utun8）
+- ✅ 修复默认 macOS 网关到直连网络接口
+- ✅ 支持递归 CNAME 解析
+- ✅ 通过缓存实现超快速响应
+- ✅ 一键启动，无需复杂设置
+
+### 高级功能
+- 🔍 域名追踪工具 (`trace.go`)
+  - 详细的网络信息显示
+  - 路由路径分析
+  - 自动路由修复
+  - CNAME 链可视化
+- 📊 交互式控制台 (`ovpnctl`)
+  - 实时日志查看
+  - 路由测试
+  - 接口管理
+  - 配置重载
 
 ---
 
-## 使用教程
+## 快速开始
 
-### 前置依赖
+### 环境要求
 
 - Go 1.18+
-- macOS 系统（支持 `route`、`scutil` 等命令）
+- macOS（支持 `route`、`scutil` 等命令）
 - 已连接的 OpenVPN 客户端（如 Tunnelblick）
 
-### 安装构建
+### 构建安装
 
 ```bash
+# 克隆仓库
 git clone https://github.com/iaaaannn0/openvpnadvanced.git
 cd openvpnadvanced
+
+# 构建项目
 go build -o openvpnadvanced ./cmd
 ```
 
 ### 启动服务
 
 ```bash
+# 启动服务
 sudo ./openvpnadvanced
 ```
 
-### 交互控制台使用说明
+### 交互式控制台
 
-程序支持交互式命令行控制台（ovpnctl），可动态控制分流逻辑与查看状态。
+该工具提供了一个交互式命令控制台 (ovpnctl) 用于运行时控制。
 
 #### 启动控制台
 
@@ -77,282 +102,197 @@ sudo ./openvpnadvanced
 sudo ./openvpnadvanced --start
 ```
 
-启动后进入交互命令行：
+#### 可用命令
 
-```text
-ovpnctl> help
-```
+| 命令 | 描述 | 示例 |
+|------|------|------|
+| `start` | 在后台启动核心逻辑 | `start` |
+| `startv` | 启动并显示实时日志 | `startv` |
+| `status` | 检查服务状态 | `status` |
+| `view-log` | 使用过滤器查看日志 | `view-log info` |
+| `test` | 测试域名规则匹配 | `test example.com` |
+| `rtest` | 测试域名解析 | `rtest example.com` |
+| `show-iface` | 显示接口信息 | `show-iface` |
+| `reload-config` | 重载配置 | `reload-config` |
+| `clear` | 清空控制台 | `clear` |
 
-#### 常用命令示例
+### 域名追踪工具
 
-| 命令 | 说明 |
-|------|------|
-| `start` | 静默启动核心分流程序，后台运行，日志写入文件 |
-| `startv` | 启动程序并实时在控制台显示所有日志 |
-| `status` | 查看核心程序是否正在运行，VPN 检查状态 |
-| `view-log info` | 查看全部日志 |
-| `view-log err` | 查看错误日志 |
-| `view-log vpn` | 查看 VPN 命中日志 |
-| `test example.com` | 测试该域名是否命中规则并走 VPN |
-| `rtest example.com` | 解析并判断该域名实际走哪个出口 |
-| `show-iface` | 查看当前 VPN 接口状态 |
-| `clear` | 清空控制台输出 |
-| `reload-config` | 热加载 config.ini 配置 |
-| `check-openvpn-on/off` | 开启/关闭 OpenVPN 启动检查 |
-| `log-on/off` | 开启或关闭日志记录功能 |
-| `set-log-level info/vpn/err` | 设置日志等级 |
-| `clear-log` | 清空日志文件 |
-| `exit` | 退出控制台 |
-
-> 支持命令补全（按 Tab 键），并可通过方向键翻阅历史输入。
-
-### 设置本地 DNS
+`trace.go` 工具提供有关域名解析和路由的详细信息：
 
 ```bash
-sudo networksetup -setdnsservers Wi-Fi 127.0.0.1
+# 运行追踪工具
+go run tools/trace.go example.com
 ```
 
-### 测试效果
-
-```bash
-dig youtube.com +short
-go run tools/trace.go youtube.com
-```
+#### 输出信息
+- 网络信息
+  - 域名解析
+  - IP 地址
+  - 匹配规则
+  - CNAME 链
+- 路由信息
+  - 当前接口
+  - VPN 接口
+  - 默认网关
+  - 路由状态
 
 ---
 
-## 配置说明
+## 配置指南
 
-- `assets/rule.list`: 自定义分流规则
-- `assets/subscriptions.txt`: 在线规则订阅源
-- `assets/merged_rule.list`: 合并后的规则（自动生成）
-- `output/vpn_ips.txt`: 所有被分流的 IP（日志输出）
-- `assets/cache.json`: DNS 缓存记录（自动生成）
+### DNS 配置
+1. 将本地 DNS 设置为 127.0.0.1
+2. 在 `config.ini` 中配置 DNS 代理设置
+3. 添加自定义规则或订阅规则列表
 
-规则格式支持：
-```text
-DOMAIN-SUFFIX,google.com
-DOMAIN,facebook.com
+### 规则管理
+- 本地规则：`assets/rule.list`
+- 远程订阅：在 `config.ini` 中添加 URL
+- 自动更新：在 `config.ini` 中配置
+
+---
+
+## 工作原理
+
+1. **DNS 解析**
+   - 本地 DNS 代理处理查询
+   - 支持 DoH 安全查询
+   - 缓存响应以提高性能
+
+2. **流量路由**
+   - 分析域名规则
+   - 通过 VPN 或直连路由流量
+   - 维护最优路由路径
+
+3. **接口管理**
+   - 检测 VPN 接口
+   - 管理网络路由
+   - 处理接口变更
+
+---
+
+## 系统架构
+
 ```
-
----
-
-## 程序实现原理
-
-本程序通过本地 DNS 代理服务实现精细化域名分流，其工作原理分为以下几个阶段：
-
-### 1. 系统 DNS 重定向
-
-用户将系统的 DNS 设置为 `127.0.0.1`，由本程序监听本地 53 端口（TCP/UDP），拦截所有 DNS 请求。
-
-### 2. 规则匹配与缓存查询
-
-收到 DNS 请求后，程序会：
-- 查询本地缓存，如已存在解析结果则直接返回
-- 否则进入规则判断流程，根据域名匹配 `merged_rule.list` 中的规则（支持 `DOMAIN-SUFFIX`、`DOMAIN` 等）
-
-### 3. DoH 解析与 CNAME 跟踪
-
-若命中规则或缓存未命中，则使用 Cloudflare / Google DoH 服务进行解析：
-- 递归支持 A、AAAA、CNAME 跳转链，直到获得真实 IP 地址
-- 对每一个跳转中间节点都尝试 A/AAAA fallback，确保拿到最终 IP
-
-### 4. 路由控制
-
-根据是否命中规则：
-- ✅ 命中：调用 `route add` 指令，将目标 IP 加入路由表，并指定走 utun 接口（如 utun8）
-- ❌ 未命中：不修改系统路由，默认走直连出口（如 en0）
-
-同时，为避免 OpenVPN 捕获全局流量，程序在启动时自动清除 `0.0.0.0/1` 和 `128.0.0.0/1` 等 catch-all 路由，并重建真实默认网关。
-
-### 5. 调试工具 trace.go
-
-提供 `tools/trace.go` 工具，可模拟域名解析流程，输出：
-- 命中规则状态
-- 当前 IP
-- 是否通过 VPN 接口路由
-- CNAME 跳转链
-
----
-
-## 系统架构设计
-
-```mermaid
-graph TD
-    A[系统 DNS 请求] --> B[本地 DNS 代理 :53]
-    B --> C[规则匹配引擎]
-    C -->|命中| D[添加静态路由 -> utunX]
-    C -->|未命中| E[走默认出口 en0]
-    B --> F[DNS over HTTPS 解析]
-    F --> G[递归解析 + CNAME 支持]
-    G --> H[缓存模块]
-    H --> B
+├── cmd/                 # 命令行接口
+├── dnsmasq/            # DNS 代理实现
+├── vpn/                # VPN 路由管理
+├── tools/              # 工具集
+│   └── trace.go        # 域名追踪工具
+├── assets/             # 配置和规则
+└── config.ini          # 主配置文件
 ```
 
 ---
 
 ## 模块说明
 
-| 模块 | 路径 | 功能说明 |
-|------|------|----------|
-| main.go | `cmd/` | 程序主入口 |
-| config.go | `config/` | 配置加载 |
-| doh.go | `doh/` | DoH 解析实现 |
-| server.go | `dnsproxy/` | DNS 代理监听 |
-| fetcher.go / parser.go | `fetcher/` | 订阅拉取与规则解析 |
-| openvpn.go | `vpn/` | VPN 接口识别、路由设置 |
-| trace.go | `tools/` | 调试用 trace 工具 |
+### DNS 代理 (`dnsmasq/`)
+- 处理 DNS 查询
+- 实现缓存
+- 支持 DoH
+- 管理规则
+
+### VPN 路由 (`vpn/`)
+- 管理网络接口
+- 处理路由注入
+- 检测 VPN 状态
+- 修复路由问题
+
+### 工具集 (`tools/`)
+- 域名追踪
+- 路由测试
+- 接口检查
+- 日志管理
 
 ---
 
-## 常见问题与解决方案
+## 常见问题
 
-### Q1: 启动时提示 "No VPN interface found"
-- 请确保你已连接 VPN，使用 `ifconfig` 查看是否存在 utun 接口
+### 常见问题
+1. **DNS 不工作**
+   - 检查本地 DNS 设置
+   - 验证 DNS 代理是否运行
+   - 检查规则配置
 
-### Q2: `route: not in table` 报错
-- 说明默认路由已被移除，无需处理
+2. **VPN 路由问题**
+   - 验证 VPN 连接
+   - 检查接口检测
+   - 审查路由规则
 
-### Q3: 某些域名无法访问（如 `ted.com`）
-- 可能是 CNAME 解析未递归到底，程序已支持递归处理，请确保使用最新版
-
-### Q4: 如何还原 DNS 设置？
-
-```bash
-sudo networksetup -setdnsservers Wi-Fi empty
-```
+3. **性能问题**
+   - 清除 DNS 缓存
+   - 优化规则
+   - 检查网络状况
 
 ---
 
-## 性能优化说明
+## 性能优化
 
-为了确保高效稳定运行，本程序进行了以下优化设计：
+### DNS 优化
+- 实现缓存
+- 优化规则匹配
+- 使用高效算法
 
-- **DNS 缓存机制**：所有解析结果将缓存至 `assets/cache.json`，避免重复解析、减少 DoH 请求。
-- **按需添加路由**：仅对命中规则的目标 IP 添加静态路由，避免污染全局路由表。
-- **递归解析优化**：在解析 CNAME 链时，优先使用缓存命中，未命中才递归进行 DoH 查询。
-- **订阅规则去重**：自动合并与去重本地和远程规则，提升匹配效率。
+### 路由优化
+- 最小化路由变更
+- 优化接口检测
+- 缓存路由决策
 
 ---
 
 ## 安全与隐私
 
-我们重视用户数据的私密性：
+### DNS 安全
+- 支持 DoH
+- DNS 缓存保护
+- 规则验证
 
-- 所有 DNS 查询均使用加密的 DNS-over-HTTPS（DoH）协议完成，防止明文泄漏。
-- 本地仅缓存 IP 结果，**不记录访问来源与用户信息**。
-- 用户可随时手动清除 `assets/cache.json` 来移除 DNS 历史记录。
+### 路由安全
+- 安全路由注入
+- 接口验证
+- 访问控制
 
 ---
 
-## 如何验证是否真的走 VPN
+## 如何验证 VPN 路由
 
-你可以使用如下命令手动确认目标 IP 是否通过 VPN 接口：
-
+1. 使用追踪工具：
 ```bash
-# 示例：检查 youtube.com 是否通过 utun8
-dig youtube.com +short
-# 假设返回 64.233.162.91
-
-route -n get 64.233.162.91
+go run tools/trace.go example.com
 ```
 
-如果输出包含如下字段：
-
-```
-interface: utun8
-```
-
-则说明该域名的访问流量已成功被路由至 VPN 接口。
-
-也可以使用程序自带工具：
-
+2. 检查路由信息：
 ```bash
-go run tools/trace.go youtube.com
-```
-
-输出将显示：
-
-```
-Route via: utun8
-✅ This domain is routed through VPN
+sudo ./openvpnadvanced --start
+ovpnctl> rtest example.com
 ```
 
 ---
 
 ## 开发者指南
 
+### 构建
 ```bash
-# 运行主程序
-sudo go run cmd/main.go
-
-# 调试 DNS 路由行为
-go run tools/trace.go example.com
+go build -o openvpnadvanced ./cmd
 ```
 
-### 项目结构
-
-```text
-.
-├── cmd/                 # 主程序入口
-├── config/              # 配置读取
-├── dnsmasq/             # DNS 解析和缓存
-├── doh/                 # DoH 逻辑
-├── dnsproxy/            # DNS 服务监听
-├── fetcher/             # 订阅和规则拉取
-├── vpn/                 # VPN 相关接口/路由
-├── tools/               # 调试工具
-├── assets/              # 配置文件和缓存
-└── output/              # 路由记录输出
+### 测试
+```bash
+go test ./...
 ```
 
----
-
-## 关键函数说明
-
-以下为项目中各核心模块的关键函数简要说明：
-
-#### dnsmasq/
-
-- `ResolveRecursive(domain string, rules []Rule, cache *Cache)`: 递归解析域名（含 CNAME 支持），返回是否命中规则及 IP。
-- `ResolveWithCNAME(domain string, rules []Rule, cache *Cache)`: 与上类似，但额外返回首个 CNAME 跳转名，用于 trace 视图。
-- `MatchesRules(domain string, rules []Rule)`: 判断域名是否匹配规则集。
-
-#### doh/
-
-- `Query(domain string)`: 执行 A 记录查询。
-- `QueryAAAA(domain string)`: 执行 AAAA 记录查询（IPv6）。
-- `QueryWithCNAME(domain string)`: 返回 A + CNAME（若存在）信息。
-- `QueryAll(domain string)`: 返回所有记录（A、AAAA、CNAME）。
-
-#### dnsproxy/
-
-- `StartDNSProxy(...)`: 启动本地 DNS 服务，监听 TCP/UDP :53 端口，内部调用上层解析逻辑。
-
-#### vpn/
-
-- `DetectVPNInterface()`: 自动识别当前系统的 utun 接口名称。
-- `AddRoute(ip, iface string)`: 将指定 IP 添加路由表中并指向指定 VPN 接口。
-- `CorrectDefaultRoute()`: 修复默认网关为直连网卡，并移除 VPN catch-all 路由。
-
-#### fetcher/
-
-- `LoadRulesFromFile(path string)`: 加载本地规则列表。
-- `LoadSubscriptions()`: 从订阅地址下载远程规则。
-- `MergeRules(...)`: 去重合并规则，写入 merged_rule.list。
-
-#### tools/trace.go
-
-- `main()`: 命令行工具，用于调试 DNS 分流效果。
-- 内部调用 `ResolveWithCNAME()` 并打印是否命中规则、路由出口等调试信息。
-
-> 所有函数都有详细注释，支持在 IDE 中跳转查阅具体实现。
+### 贡献
+1. Fork 仓库
+2. 创建特性分支
+3. 提交 Pull Request
 
 ---
 
 ## 许可证
 
-本项目使用 [MIT License](https://opensource.org/licenses/MIT) 开源许可协议。
+本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
 
 ```
 MIT License

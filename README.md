@@ -31,10 +31,18 @@
 
 This project is designed to provide OpenVPN users with a high-performance and flexible rule-based traffic splitter. It prevents all traffic from going through VPN and supports subscriptions, DNS caching, CNAME resolution, and DNS pollution protection.
 
+### Key Benefits
+- **Smart Traffic Routing**: Automatically routes traffic based on rules
+- **Enhanced Privacy**: Supports DoH (DNS over HTTPS) for secure DNS queries
+- **Improved Performance**: DNS caching and optimized routing
+- **Easy Management**: Simple configuration and rule management
+- **Real-time Monitoring**: Comprehensive logging and status tracking
+
 ---
 
 ## Features
 
+### Core Features
 - ✅ Local DNS proxy (supports DoH / TCP / UDP)
 - ✅ Custom rules and remote subscriptions (auto deduplication & merge)
 - ✅ Accurate routing (adds static route via utunX)
@@ -43,6 +51,18 @@ This project is designed to provide OpenVPN users with a high-performance and fl
 - ✅ Supports recursive CNAME resolution
 - ✅ Ultra-fast response via cache
 - ✅ One-command startup, no complex setup
+
+### Advanced Features
+- 🔍 Domain Tracing Tool (`trace.go`)
+  - Detailed network information display
+  - Routing path analysis
+  - Automatic route fixing
+  - CNAME chain visualization
+- 📊 Interactive Console (`ovpnctl`)
+  - Real-time log viewing
+  - Route testing
+  - Interface management
+  - Configuration reloading
 
 ---
 
@@ -57,14 +77,18 @@ This project is designed to provide OpenVPN users with a high-performance and fl
 ### Build & Installation
 
 ```bash
+# Clone the repository
 git clone https://github.com/iaaaannn0/openvpnadvanced.git
 cd openvpnadvanced
+
+# Build the project
 go build -o openvpnadvanced ./cmd
 ```
 
 ### Start the Service
 
 ```bash
+# Start the service
 sudo ./openvpnadvanced
 ```
 
@@ -78,238 +102,194 @@ The tool provides an interactive command console (ovpnctl) for runtime control.
 sudo ./openvpnadvanced --start
 ```
 
-Then type:
+#### Available Commands
 
-```text
-ovpnctl> help
-```
+| Command | Description | Example |
+|---------|-------------|---------|
+| `start` | Start core logic in background | `start` |
+| `startv` | Start with real-time logs | `startv` |
+| `status` | Check service status | `status` |
+| `view-log` | View logs with filters | `view-log info` |
+| `test` | Test domain rule match | `test example.com` |
+| `rtest` | Test domain resolution | `rtest example.com` |
+| `show-iface` | Show interface info | `show-iface` |
+| `reload-config` | Reload configuration | `reload-config` |
+| `clear` | Clear console | `clear` |
 
-#### Common Commands
+### Domain Tracing Tool
 
-| Command | Description |
-|---------|-------------|
-| `start` | Start the core logic silently in the background, logs written to file |
-| `startv` | Start and show real-time logs in console |
-| `status` | Check if core is running and OpenVPN check status |
-| `view-log info` | Show all logs |
-| `view-log err` | Show only error logs |
-| `view-log vpn` | Show only VPN route logs |
-| `test example.com` | Test if the domain matches VPN rule |
-| `rtest example.com` | Resolve and determine if VPN or direct |
-| `show-iface` | Display current VPN interface info |
-| `clear` | Clear console screen |
-| `reload-config` | Reload config.ini without restarting service |
-| `check-openvpn-on/off` | Enable/disable OpenVPN client check |
-| `log-on/off` | Turn logging on or off |
-| `set-log-level info/vpn/err` | Set log verbosity |
-| `clear-log` | Clear all log files |
-| `exit` | Exit the console |
-
-> Tab-completion supported. Navigate input history with arrow keys.
-
----
-
-### Configure Local DNS
+The `trace.go` tool provides detailed information about domain resolution and routing:
 
 ```bash
-sudo networksetup -setdnsservers Wi-Fi 127.0.0.1
+# Run the tracing tool
+go run tools/trace.go example.com
 ```
 
-### Test Example
-
-```bash
-dig youtube.com +short
-go run tools/trace.go youtube.com
-```
+#### Output Information
+- Network Information
+  - Domain resolution
+  - IP address
+  - Matched rules
+  - CNAME chain
+- Routing Information
+  - Current interface
+  - VPN interface
+  - Default gateway
+  - Route status
 
 ---
 
 ## Configuration Guide
 
-- `assets/rule.list`: Custom rule list
-- `assets/subscriptions.txt`: Online subscription sources
-- `assets/merged_rule.list`: Merged rule file (auto-generated)
-- `output/vpn_ips.txt`: IPs routed through VPN (log output)
-- `assets/cache.json`: Cached DNS records (auto-generated)
+### DNS Configuration
+1. Set local DNS to 127.0.0.1
+2. Configure DNS proxy settings in `config.ini`
+3. Add custom rules or subscribe to rule lists
 
-Supported formats:
-```
-DOMAIN-SUFFIX,google.com
-DOMAIN,facebook.com
-```
+### Rule Management
+- Local rules: `assets/rule.list`
+- Remote subscriptions: Add URLs in `config.ini`
+- Automatic updates: Configure in `config.ini`
 
 ---
 
 ## How It Works
 
-This tool implements fine-grained domain-based traffic routing through a local DNS proxy.
+1. **DNS Resolution**
+   - Local DNS proxy handles queries
+   - Supports DoH for secure queries
+   - Caches responses for performance
 
-### 1. System DNS Redirection
+2. **Traffic Routing**
+   - Analyzes domain rules
+   - Routes traffic through VPN or direct
+   - Maintains optimal routing paths
 
-Set your system's DNS to `127.0.0.1` and let the tool capture all DNS queries via TCP/UDP 53.
-
-### 2. Rule Matching & Caching
-
-- Checks the local cache first
-- If cache misses, domain is matched against `merged_rule.list` (supports `DOMAIN-SUFFIX`, `DOMAIN`, etc.)
-
-### 3. DoH & CNAME Resolution
-
-If no match or no cache, fallback to DoH (Cloudflare or Google):
-- Recursively resolve A, AAAA, and CNAME records
-- Fallback on intermediate CNAMEs to ensure final IP
-
-### 4. Route Control
-
-Based on matching result:
-- ✅ Matched: `route add` to VPN interface (e.g. utun8)
-- ❌ Not matched: default direct route (e.g. en0)
-
-Removes catch-all routes (`0.0.0.0/1`, `128.0.0.0/1`) and restores default gateway at startup.
-
-### 5. Debug Tool
-
-Use `tools/trace.go` to:
-- Show if domain matched
-- Display IP result
-- Show VPN or direct
-- Print CNAME hops
+3. **Interface Management**
+   - Detects VPN interfaces
+   - Manages network routes
+   - Handles interface changes
 
 ---
 
 ## Architecture
 
-```mermaid
-graph TD
-    A[System DNS Query] --> B[Local DNS Proxy :53]
-    B --> C[Rule Matcher]
-    C -->|Matched| D[Add Static Route -> utunX]
-    C -->|Not Matched| E[Direct to en0]
-    B --> F[DoH Resolver]
-    F --> G[Recursive + CNAME Support]
-    G --> H[Cache Layer]
-    H --> B
+```
+├── cmd/                 # Command-line interface
+├── dnsmasq/            # DNS proxy implementation
+├── vpn/                # VPN routing management
+├── tools/              # Utility tools
+│   └── trace.go        # Domain tracing tool
+├── assets/             # Configuration and rules
+└── config.ini          # Main configuration file
 ```
 
 ---
 
 ## Module Description
 
-| Module | Path | Description |
-|--------|------|-------------|
-| main.go | `cmd/` | Program entry |
-| config.go | `config/` | Config loader |
-| doh.go | `doh/` | DoH resolver |
-| server.go | `dnsproxy/` | DNS proxy server |
-| fetcher.go / parser.go | `fetcher/` | Subscription fetcher |
-| openvpn.go | `vpn/` | VPN interface & route logic |
-| trace.go | `tools/` | Domain debug tool |
+### DNS Proxy (`dnsmasq/`)
+- Handles DNS queries
+- Implements caching
+- Supports DoH
+- Manages rules
+
+### VPN Routing (`vpn/`)
+- Manages network interfaces
+- Handles route injection
+- Detects VPN status
+- Fixes routing issues
+
+### Tools (`tools/`)
+- Domain tracing
+- Route testing
+- Interface inspection
+- Log management
 
 ---
 
 ## FAQ
 
-### Q1: "No VPN interface found"
+### Common Issues
+1. **DNS not working**
+   - Check local DNS settings
+   - Verify DNS proxy is running
+   - Check rule configuration
 
-Make sure your VPN is active and utunX exists (`ifconfig`).
+2. **VPN routing issues**
+   - Verify VPN connection
+   - Check interface detection
+   - Review route rules
 
-### Q2: `route: not in table` warning?
-
-Catch-all route already removed. Safe to ignore.
-
-### Q3: Domain unreachable (e.g. `ted.com`)?
-
-Caused by deep CNAME chains. Recursive resolution is supported.
-
-### Q4: Reset system DNS?
-
-```bash
-sudo networksetup -setdnsservers Wi-Fi empty
-```
+3. **Performance problems**
+   - Clear DNS cache
+   - Optimize rules
+   - Check network conditions
 
 ---
 
 ## Performance Optimization
 
-- **DNS Caching**: Results saved in `assets/cache.json`
-- **Selective Routing**: Only matched IPs are routed
-- **CNAME Optimization**: Uses fallback and cache
-- **Subscription Deduplication**: Merges and dedupes rules
+### DNS Optimization
+- Implement caching
+- Optimize rule matching
+- Use efficient algorithms
+
+### Routing Optimization
+- Minimize route changes
+- Optimize interface detection
+- Cache route decisions
 
 ---
 
 ## Security & Privacy
 
-- All DNS queries use encrypted DoH
-- No telemetry or user tracking
-- Cache is local and can be deleted
+### DNS Security
+- Support for DoH
+- DNS cache protection
+- Rule validation
+
+### Routing Security
+- Secure route injection
+- Interface validation
+- Access control
 
 ---
 
 ## How to Verify VPN Routing
 
-### Manually via CLI
-
+1. Use the tracing tool:
 ```bash
-dig youtube.com +short
-# -> 64.233.162.91
-
-route -n get 64.233.162.91
+go run tools/trace.go example.com
 ```
 
-If output shows:
-
-```
-interface: utun8
-```
-
-It is routed through VPN.
-
-### Using Trace Tool
-
+2. Check routing information:
 ```bash
-go run tools/trace.go youtube.com
-```
-
-Output will show:
-
-```
-Route via: utun8
-✅ This domain is routed through VPN
+sudo ./openvpnadvanced --start
+ovpnctl> rtest example.com
 ```
 
 ---
 
 ## Developer Guide
 
+### Building
 ```bash
-# Run main logic
-sudo go run cmd/main.go
-
-# Test rule match for domain
-go run tools/trace.go example.com
+go build -o openvpnadvanced ./cmd
 ```
 
-### Project Structure
-
-```text
-.
-├── cmd/                 # Program entry
-├── config/              # Config reader
-├── dnsmasq/             # Resolver & cache
-├── doh/                 # DoH client
-├── dnsproxy/            # DNS listener
-├── fetcher/             # Rule subscription
-├── vpn/                 # VPN logic
-├── tools/               # Debug tools
-├── assets/              # Rules & cache
-└── output/              # VPN logs
+### Testing
+```bash
+go test ./...
 ```
+
+### Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
 
 ---
 
 ## License
 
-MIT License © 2025
-
-Permission is hereby granted, free of charge, to any person obtaining a copy...
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
