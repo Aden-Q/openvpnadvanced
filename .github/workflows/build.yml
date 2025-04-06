@@ -1,0 +1,45 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Build Intel
+        run: |
+          GOARCH=amd64 go build -o openvpnadvanced-amd64 ./cmd
+          chmod +x openvpnadvanced-amd64
+          shasum -a 256 openvpnadvanced-amd64 > openvpnadvanced-amd64.sha256
+
+      - name: Build ARM64
+        run: |
+          GOARCH=arm64 go build -o openvpnadvanced-arm64 ./cmd
+          chmod +x openvpnadvanced-arm64
+          shasum -a 256 openvpnadvanced-arm64 > openvpnadvanced-arm64.sha256
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            openvpnadvanced-amd64
+            openvpnadvanced-amd64.sha256
+            openvpnadvanced-arm64
+            openvpnadvanced-arm64.sha256
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
