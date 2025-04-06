@@ -1,98 +1,45 @@
-name: Build and Release
+name: Release
 
 on:
   push:
-    branches: [main]
+    tags:
+      - 'v*'
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build Binaries
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        goos: [linux, windows, darwin]
-        goarch: [amd64, arm64]
-        exclude:
-          - goos: windows
-            goarch: arm64
-          - goos: linux
-            goarch: arm64
-
+    name: Build
+    runs-on: macos-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v4
         with:
           go-version: '1.21'
 
-      - name: Read version
-        id: version
-        run: echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
-
-      - name: Build and package
-        env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
-          VERSION: ${{ env.VERSION }}
+      - name: Build Intel
         run: |
-          NAME=openvpnadvanced-${VERSION}-${GOOS}-${GOARCH}
-          BIN=$NAME
-          if [ "$GOOS" = "windows" ]; then
-            BIN="$BIN.exe"
-          fi
+          GOARCH=amd64 go build -o openvpnadvanced-amd64 ./cmd
+          chmod +x openvpnadvanced-amd64
+          shasum -a 256 openvpnadvanced-amd64 > openvpnadvanced-amd64.sha256
 
-          go build -o "$BIN" ./cmd
-          mkdir -p dist/$NAME
-          mv "$BIN" dist/$NAME/
-
-          cd dist
-          zip -r "${NAME}.zip" "$NAME"
-          sha256sum "${NAME}.zip" > "${NAME}.zip.sha256"
-          cd ..
-
-      - name: Upload per-platform artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: openvpnadvanced-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: dist/*.zip*
-  
-  release:
-    name: Publish Release
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Read version
-        id: version
-        run: echo "VERSION=$(cat VERSION)" >> $GITHUB_ENV
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: dist
-
-      - name: Extract changelog
-        id: changelog
+      - name: Build ARM64
         run: |
-          VERSION_TAG="v${{ env.VERSION }}"
-          LOG=$(awk "/^## ${VERSION_TAG}/{flag=1; next} /^## /{flag=0} flag" CHANGELOG.md)
-          echo "RELEASE_BODY<<EOF" >> $GITHUB_ENV
-          echo "$LOG" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          GOARCH=arm64 go build -o openvpnadvanced-arm64 ./cmd
+          chmod +x openvpnadvanced-arm64
+          shasum -a 256 openvpnadvanced-arm64 > openvpnadvanced-arm64.sha256
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ env.VERSION }}
-          name: Release v${{ env.VERSION }}
-          body: ${{ env.RELEASE_BODY }}
-          prerelease: ${{ contains(env.VERSION, '-rc') || contains(env.VERSION, '-beta') }}
-          files: dist/**
+          files: |
+            openvpnadvanced-amd64
+            openvpnadvanced-amd64.sha256
+            openvpnadvanced-arm64
+            openvpnadvanced-arm64.sha256
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
