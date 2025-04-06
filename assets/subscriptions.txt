@@ -1,2 +1,1 @@
-https://raw.githubusercontent.com/iaaaannn0/blocklistru/main/rule.list
-https://raw.githubusercontent.com/iaaaannn0/blocklistru/main/uncategorized.list
+https://raw.githubusercontent.com/iaaaannn0/blocklistru/refs/heads/main/bypass.list
