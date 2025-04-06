@@ -80,3 +80,47 @@ func CorrectDefaultRoute() error {
 	fmt.Printf("✅ Corrected default route to local gateway: %s\n", gateway)
 	return nil
 }
+
+// GetAllInterfaces returns all active network interfaces on the system
+func GetAllInterfaces() ([]string, error) {
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+
+	var result []string
+	for _, iface := range interfaces {
+		// 只显示活跃的接口
+		if iface.Flags&net.FlagUp != 0 {
+			// 过滤掉一些系统接口
+			if !strings.HasPrefix(iface.Name, "lo") &&
+				!strings.HasPrefix(iface.Name, "gif") &&
+				!strings.HasPrefix(iface.Name, "stf") &&
+				!strings.HasPrefix(iface.Name, "anpi") {
+				result = append(result, iface.Name)
+			}
+		}
+	}
+	return result, nil
+}
+
+// GetDefaultGateway returns the default gateway and its interface
+func GetDefaultGateway() (string, string, error) {
+	cmd := exec.Command("netstat", "-rn")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", "", err
+	}
+
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "default") {
+			fields := strings.Fields(line)
+			if len(fields) >= 4 {
+				return fields[1], fields[3], nil
+			}
+		}
+	}
+
+	return "", "", fmt.Errorf("default gateway not found")
+}

@@ -13,3 +13,4 @@ vendor/
 
 # Go workspace file
 go.work
+assets/cache.json

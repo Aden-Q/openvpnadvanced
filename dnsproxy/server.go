@@ -22,7 +22,7 @@ func NewServer(rules []dnsmasq.Rule, cache *dnsmasq.Cache, fallback string, vpnI
 	return &DNSServer{
 		Rules:    rules,
 		Cache:    cache,
-		Fallback: fallback,
+		Fallback: "127.0.0.1:53",
 		VPNIface: vpnIface,
 	}
 }
